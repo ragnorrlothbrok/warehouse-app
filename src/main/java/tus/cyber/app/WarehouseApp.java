@@ -34,14 +34,6 @@ public class WarehouseApp {
 
         // Switch Expressions and Pattern Matching
         System.out.println("\nSwitch Expressions and Pattern Matching:");
-//        for (InventoryItem item : items) {
-//            String stockStatus = switch (item) {
-//                case InventoryItem i && i.stock() > 0 -> "In Stock: " + i.stock();
-//                case InventoryItem i && i.stock() == 0 -> "Out of Stock";
-//                    default -> "Unknown Stock Status";
-//            };
-//            System.out.println(item.name() + " - " + stockStatus);
-//        }
         for (InventoryItem item : items) {
             String stockStatus = switch (item) {
                 case InventoryItem i when (i.stock() > 0) -> "In Stock: " + i.stock(); // 'when' is used instead of '&&'

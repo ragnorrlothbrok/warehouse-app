@@ -39,18 +39,24 @@ public class WarehouseApp {
         app.execute();
     }
 
-    public void execute() {
+    public void printSortedItems() {
         // Collections and Comparator with Generics
         logger.info("Sorted items by price:");
         items.stream()
                 .sorted(Comparator.comparing(InventoryItem::price))
                 .forEach(System.out::println);
 
+    }
+
+    public void printLowStockItems() {
+        // Collections and Comparator with Generics
         logger.info("\nItems with low stock:");
         items.stream()
                 .filter(item -> item.stock() > 0 && item.stock() <= 10)
                 .forEach(System.out::println);
+    }
 
+    public void printStockStatus() {
         // Switch Expressions and Pattern Matching
         logger.info("\nSwitch Expressions and Pattern Matching:");
         for (InventoryItem item : items) {
@@ -61,9 +67,10 @@ public class WarehouseApp {
             };
             logger.info(item.name() + " - " + stockStatus);
         }
+    }
 
-
-        // Concurrency using ExecutorService with Callable
+    // Concurrency using ExecutorService with Callable
+    public void fastProcessInventory() {
         try (ExecutorService executor = Executors.newFixedThreadPool(2)) {
             List<Callable<String>> tasks = items.stream()
                     .map(item -> (Callable<String>) () -> {
@@ -83,7 +90,9 @@ public class WarehouseApp {
                 executor.shutdown();
             }
         }
+    }
 
+    public void persistData() {
         // NIO2 for File Handling
         Path filePath = Paths.get("inventory.txt");
         try {
@@ -103,10 +112,12 @@ public class WarehouseApp {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
-        // Localization using ResourceBundle
+    // Localization using ResourceBundle
+    public void printLocalePrices() {
         //Locale locale = Locale.FRANCE; // Change to Locale.US for English
-        Locale locale = Locale.US; // Change to Locale.US for English
+        Locale locale = Locale.US; // Change to Locale.FRANCE for French
 
         ResourceBundle messages = ResourceBundle.getBundle("MessagesBundle", locale);
 
@@ -118,7 +129,9 @@ public class WarehouseApp {
 
         logger.info("\nLocalized message:");
         logger.info(localizedMessage);
+    }
 
+    public void printExpirationDate() {
         // Date/Time API
         logger.info("\nDate/Time API:");
         LocalDateTime now = LocalDateTime.now();
@@ -126,12 +139,47 @@ public class WarehouseApp {
 
         LocalDate expiryDate = now.toLocalDate().plusDays(30);
         logger.info("Expiry Date for Items: " + expiryDate);
+    }
 
+    public void printDiscontinuedItems() {
         // Sealed Classes Example
         logger.info("\nSealed Classes Example:");
         ProductStatus status = new Discontinued("Tablet");
         logger.info(status.getStatus());
+    }
 
+    public void execute() {
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+
+        while (!exit) {
+            System.out.println("\nWarehouse Application Menu:");
+            System.out.println("1. Print Sorted Items");
+            System.out.println("2. Print Low Stock Items");
+            System.out.println("3. Print Stock Status");
+            System.out.println("4. Fast Process Inventory");
+            System.out.println("5. Persist Data");
+            System.out.println("6. Print Locale Prices");
+            System.out.println("7. Print Expiration Date");
+            System.out.println("8. Print Discontinued Items");
+            System.out.println("9. Exit");
+            System.out.print("Enter your choice: ");
+
+            int choice = scanner.nextInt();
+            switch (choice) {
+                case 1 -> printSortedItems();
+                case 2 -> printLowStockItems();
+                case 3 -> printStockStatus();
+                case 4 -> fastProcessInventory();
+                case 5 -> persistData();
+                case 6 -> printLocalePrices();
+                case 7 -> printExpirationDate();
+                case 8 -> printDiscontinuedItems();
+                case 9 -> exit = true;
+                default -> System.out.println("Invalid choice. Please try again.");
+            }
+        }
+        scanner.close();
     }
 }
 

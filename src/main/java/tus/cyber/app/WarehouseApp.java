@@ -1,46 +1,65 @@
 package tus.cyber.app;
 
 import java.io.IOException;
-import java.nio.file.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.*;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class WarehouseApp {
-    public static void main(String[] args) {
+    Logger logger;
+    List<InventoryItem> items;
+
+    public WarehouseApp() {
+        logger = Logger.getLogger(WarehouseApp.class.getName());
+
         // Sample inventory items using Record
-        List<InventoryItem> items = Arrays.asList(
+        items = Arrays.asList(
                 new InventoryItem("Laptop", 1200, 10, true),
                 new InventoryItem("Smartphone", 800, 5, true),
                 new InventoryItem("Tablet", 300, 0, false),
                 new InventoryItem("Headphones", 150, 25, true),
                 new InventoryItem("Smartwatch", 200, 0, false)
         );
+        logger.info("Warehouse Application Initialized");
+    }
 
+    // Main method to run the application
+    public static void main(String[] args) {
+        WarehouseApp app = new WarehouseApp();
+        app.execute();
+    }
+
+    public void execute() {
         // Collections and Comparator with Generics
-        System.out.println("Sorted items by price:");
+        logger.info("Sorted items by price:");
         items.stream()
                 .sorted(Comparator.comparing(InventoryItem::price))
                 .forEach(System.out::println);
 
-        System.out.println("\nItems with low stock:");
+        logger.info("\nItems with low stock:");
         items.stream()
                 .filter(item -> item.stock() > 0 && item.stock() <= 10)
                 .forEach(System.out::println);
 
         // Switch Expressions and Pattern Matching
-        System.out.println("\nSwitch Expressions and Pattern Matching:");
+        logger.info("\nSwitch Expressions and Pattern Matching:");
         for (InventoryItem item : items) {
             String stockStatus = switch (item) {
                 case InventoryItem i when (i.stock() > 0) -> "In Stock: " + i.stock(); // 'when' is used instead of '&&'
                 case InventoryItem i when (i.stock() == 0) -> "Out of Stock";
                 default -> "Unknown Stock Status";
             };
-            System.out.println(item.name() + " - " + stockStatus);
+            logger.info(item.name() + " - " + stockStatus);
         }
 
 
@@ -48,7 +67,7 @@ public class WarehouseApp {
         try (ExecutorService executor = Executors.newFixedThreadPool(2)) {
             List<Callable<String>> tasks = items.stream()
                     .map(item -> (Callable<String>) () -> {
-                        Thread.sleep(100); // Simulate processing time
+                        Thread.sleep((long) (Math.random() * 100)); // Simulate processing time
                         return "Processed item: " + item.name();
                     })
                     .collect(Collectors.toList());
@@ -56,7 +75,7 @@ public class WarehouseApp {
             try {
                 List<Future<String>> results = executor.invokeAll(tasks);
                 for (Future<String> result : results) {
-                    System.out.println(result.get());
+                    logger.info(result.get());
                 }
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
@@ -78,7 +97,7 @@ public class WarehouseApp {
                     StandardOpenOption.TRUNCATE_EXISTING);
 
             // Read items from file
-            System.out.println("\nReading from inventory file:");
+            logger.info("\nReading from inventory file:");
             Files.lines(filePath, StandardCharsets.UTF_8)
                     .forEach(System.out::println);
         } catch (IOException e) {
@@ -97,67 +116,22 @@ public class WarehouseApp {
         String localizedMessage = MessageFormat.format(
                 messages.getString("item_info"), itemName, itemPrice);
 
-        System.out.println("\nLocalized message:");
-        System.out.println(localizedMessage);
+        logger.info("\nLocalized message:");
+        logger.info(localizedMessage);
 
         // Date/Time API
-        System.out.println("\nDate/Time API:");
+        logger.info("\nDate/Time API:");
         LocalDateTime now = LocalDateTime.now();
-        System.out.println("Current Date and Time: " + now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        logger.info("Current Date and Time: " + now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
         LocalDate expiryDate = now.toLocalDate().plusDays(30);
-        System.out.println("Expiry Date for Items: " + expiryDate);
+        logger.info("Expiry Date for Items: " + expiryDate);
 
         // Sealed Classes Example
-        System.out.println("\nSealed Classes Example:");
+        logger.info("\nSealed Classes Example:");
         ProductStatus status = new Discontinued("Tablet");
-        System.out.println(status.getStatus());
+        logger.info(status.getStatus());
+
     }
 }
 
-// Record for InventoryItem
-record InventoryItem(String name, double price, int stock, boolean inStock) {}
-
-// Sealed Classes Example
-sealed interface ProductStatus permits Available, OutOfStock, Discontinued {
-    String getStatus();
-}
-
-final class Available implements ProductStatus {
-    private final String productName;
-
-    public Available(String productName) {
-        this.productName = productName;
-    }
-
-    @Override
-    public String getStatus() {
-        return "Product " + productName + " is available.";
-    }
-}
-
-final class OutOfStock implements ProductStatus {
-    private final String productName;
-
-    public OutOfStock(String productName) {
-        this.productName = productName;
-    }
-
-    @Override
-    public String getStatus() {
-        return "Product " + productName + " is out of stock.";
-    }
-}
-
-final class Discontinued implements ProductStatus {
-    private final String productName;
-
-    public Discontinued(String productName) {
-        this.productName = productName;
-    }
-
-    @Override
-    public String getStatus() {
-        return "Product " + productName + " has been discontinued.";
-    }
-}

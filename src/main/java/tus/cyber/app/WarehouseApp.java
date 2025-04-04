@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -23,13 +24,13 @@ public class WarehouseApp {
         logger = Logger.getLogger(WarehouseApp.class.getName());
 
         // Sample inventory items using Record
-        items = Arrays.asList(
-                new InventoryItem("Laptop", 1200, 10, true),
-                new InventoryItem("Smartphone", 800, 5, true),
-                new InventoryItem("Tablet", 300, 0, false),
-                new InventoryItem("Headphones", 150, 25, true),
-                new InventoryItem("Smartwatch", 200, 0, false)
-        );
+        items = new ArrayList<>();
+        Consumer<InventoryItem> addItem = items::add;
+        addItem.accept(new InventoryItem("Laptop", 1200, 10, true));
+        addItem.accept(new InventoryItem("Smartphone", 800, 5, true));
+        addItem.accept(new InventoryItem("Tablet", 300, 0, false));
+        addItem.accept(new InventoryItem("Headphones", 150, 25, true));
+        addItem.accept(new InventoryItem("Smartwatch", 200, 0, false));
         logger.info("Warehouse Application Initialized");
     }
 
@@ -116,8 +117,8 @@ public class WarehouseApp {
 
     // Localization using ResourceBundle
     public void printLocalePrices() {
-        //Locale locale = Locale.FRANCE; // Change to Locale.US for English
-        Locale locale = Locale.US; // Change to Locale.FRANCE for French
+        Locale locale = Locale.FRANCE; // Change to Locale.US for English
+        //Locale locale = Locale.US; // Change to Locale.FRANCE for French
 
         ResourceBundle messages = ResourceBundle.getBundle("MessagesBundle", locale);
 
@@ -148,22 +149,37 @@ public class WarehouseApp {
         logger.info(status.getStatus());
     }
 
+    // findFirst() method to get the first item
+    public void getFirst() {
+        InventoryItem item = items.stream().findFirst().orElse(null);
+        System.out.println("First item is: " + item.name());
+    }
+
+    // Stream count() method to count items
+    public void countItems() {
+        double count = items.stream().count();
+        System.out.println("Total items in inventory: " + count);
+    }
+
     public void execute() {
         Scanner scanner = new Scanner(System.in);
         boolean exit = false;
 
         while (!exit) {
-            System.out.println("\nWarehouse Application Menu:");
-            System.out.println("1. Print Sorted Items");
-            System.out.println("2. Print Low Stock Items");
-            System.out.println("3. Print Stock Status");
-            System.out.println("4. Fast Process Inventory");
-            System.out.println("5. Persist Data");
-            System.out.println("6. Print Locale Prices");
-            System.out.println("7. Print Expiration Date");
-            System.out.println("8. Print Discontinued Items");
-            System.out.println("9. Exit");
-            System.out.print("Enter your choice: ");
+            System.out.println("""
+                \nWarehouse Application Menu:
+                1. Print Sorted Items
+                2. Print Low Stock Items
+                3. Print Stock Status
+                4. Fast Process Inventory
+                5. Persist Data
+                6. Print Locale Prices
+                7. Print Expiration Date
+                8. Print Discontinued Items
+                9. Print First Item
+                10. Print Item Count
+                20. Exit
+                Enter your choice: """);
 
             int choice = scanner.nextInt();
             switch (choice) {
@@ -175,7 +191,9 @@ public class WarehouseApp {
                 case 6 -> printLocalePrices();
                 case 7 -> printExpirationDate();
                 case 8 -> printDiscontinuedItems();
-                case 9 -> exit = true;
+                case 9 -> getFirst();
+                case 10 -> countItems();
+                case 20 -> exit = true;
                 default -> System.out.println("Invalid choice. Please try again.");
             }
         }

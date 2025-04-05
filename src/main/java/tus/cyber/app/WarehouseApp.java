@@ -13,6 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -25,12 +26,18 @@ public class WarehouseApp {
 
         // Sample inventory items using Record
         items = new ArrayList<>();
+        Supplier<InventoryItem> laptopSupplier = () -> new InventoryItem("Laptop", 1200, 10, true);
+        Supplier<InventoryItem> smartphoneSupplier = () -> new InventoryItem("Smartphone", 800, 5, true);
+        Supplier<InventoryItem> tabletSupplier = () -> new InventoryItem("Tablet", 300, 0, false);
+        Supplier<InventoryItem> headphonesSupplier = () -> new InventoryItem("Headphones", 150, 25, true);
+        Supplier<InventoryItem> smartwatchSupplier = () -> new InventoryItem("Smartwatch", 200, 0, false);
+
         Consumer<InventoryItem> addItem = items::add;
-        addItem.accept(new InventoryItem("Laptop", 1200, 10, true));
-        addItem.accept(new InventoryItem("Smartphone", 800, 5, true));
-        addItem.accept(new InventoryItem("Tablet", 300, 0, false));
-        addItem.accept(new InventoryItem("Headphones", 150, 25, true));
-        addItem.accept(new InventoryItem("Smartwatch", 200, 0, false));
+        addItem.accept(laptopSupplier.get());
+        addItem.accept(smartphoneSupplier.get());
+        addItem.accept(tabletSupplier.get());
+        addItem.accept(headphonesSupplier.get());
+        addItem.accept(smartwatchSupplier.get());
         logger.info("Warehouse Application Initialized");
     }
 
@@ -66,6 +73,17 @@ public class WarehouseApp {
                 case InventoryItem i when (i.stock() == 0) -> "Out of Stock";
                 default -> "Unknown Stock Status";
             };
+            logger.info(item.name() + " - " + stockStatus);
+        }
+    }
+
+    // Method to print stock status using allMatch
+    public void printStockStatusAllMatch() {
+        // Switch Expressions and Pattern Matching
+        logger.info("\nSwitch Expressions and Pattern Matching:");
+        for (InventoryItem item : items) {
+            String stockStatus = items.stream().allMatch(i -> i.stock() > 0) ?
+                    "In Stock: " + item.stock() : "Out of Stock";
             logger.info(item.name() + " - " + stockStatus);
         }
     }
@@ -150,36 +168,119 @@ public class WarehouseApp {
     }
 
     // findFirst() method to get the first item
-    public void getFirst() {
+    public void printFirstItem() {
         InventoryItem item = items.stream().findFirst().orElse(null);
-        System.out.println("First item is: " + item.name());
+        logger.info("First item is: " + (item != null ? item.name() : null));
+    }
+
+    // Method to find any item using stream findAny() method
+    public void findAnyItem() {
+        items.stream()
+                .findAny()
+                .ifPresent(item -> logger.info("Found item: " + item.name()));
+    }
+
+    // Method to map inventory items by their names
+    public Map<String, InventoryItem> mapItemsByName() {
+        return items.stream()
+                .collect(Collectors.toMap(InventoryItem::name, item -> item));
     }
 
     // Stream count() method to count items
     public void countItems() {
         double count = items.stream().count();
-        System.out.println("Total items in inventory: " + count);
+        logger.info("Total items in inventory: " + count);
     }
 
+    // Method to print out-of-stock items
+    public void printOutOfStockItems() {
+        logger.info("\nOut of Stock Items:");
+        items.stream()
+                .collect(Collectors.groupingBy(InventoryItem::inStock))
+                .getOrDefault(false, Collections.emptyList())
+                .forEach(System.out::println);
+    }
+
+    // Method to print out-of-stock items using partitioningBy
+    public void printOutOfStockItemsPartitionBy() {
+        logger.info("\nOut of Stock Items:");
+        items.stream()
+                .collect(Collectors.partitioningBy(InventoryItem::inStock))
+                .get(false)
+                .forEach(System.out::println);
+    }
+
+    // Method to print items with minimum stock
+    public void printItemsWithMinStock(int minStock) {
+        logger.info("\nItem with minimum stock of at least " + minStock + ":");
+        items.stream()
+                .filter(item -> item.stock() >= minStock)
+                .min(Comparator.comparingInt(InventoryItem::stock))
+                .ifPresent(System.out::println);
+    }
+
+    // Method to print items with maximum stock
+    public void printItemsWithMaxStock(int maxStock) {
+        logger.info("\nItem with maximum stock of " + maxStock + ":");
+        items.stream()
+                .filter(item -> item.stock() <= maxStock)
+                .max(Comparator.comparingInt(InventoryItem::stock))
+                .ifPresent(System.out::println);
+    }
+
+    // Method to print most expensive item
+    public void printMostExpensiveItem() {
+        logger.info("\nMost expensive item:");
+        items.stream()
+                .max(Comparator.comparingDouble(InventoryItem::price))
+                .ifPresent(System.out::println);
+    }
+
+    // Method to demonstrate the use of stream distinct operation
+    public void printDistinctItems() {
+        logger.info("\nDistinct Items:");
+        items.stream()
+                .distinct()
+                .forEach(System.out::println);
+    }
+
+    // Method to demonstrate the use of stream limit operation
+    public void printLimitedItems(int limit) {
+        logger.info("\nLimited Items:");
+        items.stream()
+                .limit(limit)
+                .forEach(System.out::println);
+    }
+
+    // Method to execute the application
     public void execute() {
         Scanner scanner = new Scanner(System.in);
         boolean exit = false;
 
         while (!exit) {
             System.out.println("""
-                \nWarehouse Application Menu:
-                1. Print Sorted Items
-                2. Print Low Stock Items
-                3. Print Stock Status
-                4. Fast Process Inventory
-                5. Persist Data
-                6. Print Locale Prices
-                7. Print Expiration Date
-                8. Print Discontinued Items
-                9. Print First Item
-                10. Print Item Count
-                20. Exit
-                Enter your choice: """);
+                    \nWarehouse Application Menu:
+                    1. Print Sorted Items
+                    2. Print Low Stock Items
+                    3. Print Stock Status
+                    4. Fast Process Inventory
+                    5. Persist Data
+                    6. Print Locale Prices
+                    7. Print Expiration Date
+                    8. Print Discontinued Items
+                    9. Print First Item
+                    10. Print Item Count
+                    11. Print Out of Stock Items
+                    12. Print Items with Minimum Stock of 5
+                    13. Print Items with Maximum Stock of 20
+                    14. Print Most Expensive Item
+                    15. Find Any Item
+                    16. Print Distinct Items
+                    17. Print Limited Items
+                    18. Print out-of-stock items using partitioningBy
+                    19. Print stock status using allMatch
+                    20. Exit
+                    Enter your choice: """);
 
             int choice = scanner.nextInt();
             switch (choice) {
@@ -191,8 +292,17 @@ public class WarehouseApp {
                 case 6 -> printLocalePrices();
                 case 7 -> printExpirationDate();
                 case 8 -> printDiscontinuedItems();
-                case 9 -> getFirst();
+                case 9 -> printFirstItem();
                 case 10 -> countItems();
+                case 11 -> printOutOfStockItems();
+                case 12 -> printItemsWithMinStock(5);
+                case 13 -> printItemsWithMaxStock(20);
+                case 14 -> printMostExpensiveItem();
+                case 15 -> findAnyItem();
+                case 16 -> printDistinctItems();
+                case 17 -> printLimitedItems(2);
+                case 18 -> printOutOfStockItemsPartitionBy();
+                case 19 -> printStockStatusAllMatch();
                 case 20 -> exit = true;
                 default -> System.out.println("Invalid choice. Please try again.");
             }

@@ -65,15 +65,14 @@ public class WarehouseApp {
                 .forEach(System.out::println);
     }
 
-    // Method to print low stock items using noneMatch
-    public void printLowStockItemsNoneMatch() {
-        // Collections and Comparator with Generics
-        logger.info("\nItems with low stock:");
-        items.stream()
-                .filter(item -> item.stock() > 0)
-                .filter(item -> items.stream().noneMatch(i -> i.stock() > 10))
-                .forEach(System.out::println);
+    // Method to print stock status using noneMatch
+    public void areOutOfStockItems() {
+        logger.info("\nSwitch Expressions and Pattern Matching:");
+        String stockStatus = items.stream().noneMatch(i -> i.stock() == 0) ?
+                  "No there are not" : "Yes there are ";
+        System.out.println(MessageFormat.format("Are there out of stock items: {0}", stockStatus));
     }
+
 
     public void printStockStatus() {
         // Switch Expressions and Pattern Matching
@@ -289,7 +288,7 @@ public class WarehouseApp {
                     13. Print Maximum Stock of 20           14. Print Most Expensive Item
                     15. Find Any Item                       16. Print Distinct Items
                     17. Print Limited Items                 18. Print out-of-stock items using partitioningBy
-                    19. Print stock status using allMatch   20. Print low stock items using noneMatch
+                    19. Print stock status using allMatch   20. Are there out of stock items?
                     21. Print most expensive using anyMatch 25. Exit
                     Enter your choice: """);
 
@@ -314,7 +313,7 @@ public class WarehouseApp {
                 case 17 -> printLimitedItems(2);
                 case 18 -> printOutOfStockItemsPartitionBy();
                 case 19 -> printStockStatusAllMatch();
-                case 20 -> printLowStockItemsNoneMatch();
+                case 20 -> areOutOfStockItems();
                 case 21 -> printMostExpensiveItemAnyMatch();
                 case 25 -> exit = true;
                 default -> System.out.println("Invalid choice. Please try again.");
